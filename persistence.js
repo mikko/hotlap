@@ -20,7 +20,21 @@ var sqlConst = {
             " );"
         ].join(" ")
     ],
-    testTable: "record"
+    get: {
+        games: "SELECT gameid, name FROM game",
+        players: "SELECT playerid, name FROM player",
+        tracks: "SELECT trackid, name FROM track",
+        cars: "SELECT carid, name FROM car",
+        records: "SELECT recordid, name FROM record"
+    },
+    testTable: "record",
+    insert: {
+        game: "INSERT INTO game(name) VALUES (?)",
+        player: "INSERT INTO player(name) VALUES (?)",
+        track: "INSERT INTO track(name) VALUES (?)",
+        car: "INSERT INTO car(name) VALUES (?)",
+        record: "INSERT INTO record(time, game, player, track, car) VALUES (?, ?, ?, ?, ?)"
+    }
 }
 
 var Persistence = function() {
@@ -45,7 +59,33 @@ Persistence.prototype.open = function() {
             });
         }
     });
-},
+};
+
+Persistence.prototype.insert = function(table, values, callback) {
+    var query = sqlConst.insert[table];
+    if (query !== undefined) {
+        var statement = Persistence.db.prepare(query);
+        statement.run(values, callback.bind(null, 200));
+    }
+    else {
+        callback(418, "Not found " + table);
+    }
+};
+
+Persistence.prototype.fetch = function(table, values, callback) {
+    var query = sqlConst.get[table + "s"];
+    if (query !== undefined) {
+        var result = [];
+        var statement = Persistence.db.each(query, function(err, row) {
+            result.push(JSON.stringify(row));
+        }, function() {
+            callback(result);
+        });
+        
+    } else {
+        callback("Not found " + table);
+    }
+};
 
 /*
 console.log("Inserting initial data");
@@ -61,7 +101,7 @@ console.log("Inserting initial data");
 
 Persistence.prototype.close = function() {
 	Persistence.db.close();
-},
+};
 
 Persistence.prototype.test = function(cb) {
 	var results = [];
