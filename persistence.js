@@ -6,9 +6,7 @@ var sqlConst = {
         "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT)",
         "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT)",
         "CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT)",        
-        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT, game INTEGER,",
-            "FOREIGN KEY(game) REFERENCES game(gameid))"
-        ].join(" "),
+        "CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT)",
         ["CREATE TABLE record(recordid INTEGER PRIMARY KEY, ",
             "time INTEGER,", 
             "player INTEGER,",
@@ -21,18 +19,36 @@ var sqlConst = {
     ],
     get: {
         players: "SELECT playerid, name FROM player",
+        games: "SELECT * FROM game",
+        cars: "SELECT * FROM car",
         tracks: "SELECT trackid, name FROM track",
         records: "SELECT * FROM record",
         player: "SELECT * FROM player WHERE playerid = ?",
+        game: "SELECT * FROM game WHERE gameid = ?",
+        car: "SELECT * FROM car WHERE carid = ?",
         track: "SELECT * FROM track WHERE trackid = ?",
         record: "SELECT * FROM record WHERE recordid = ?"
     },
     testTable: "record",
     insert: {
         player: "INSERT INTO player(name) VALUES (?)",
-        track: "INSERT INTO track(name, game, car) VALUES (?, ?, ?)",
-        record: "INSERT INTO record(time, player, track) VALUES (?, ?, ?)"
+        game: "INSERT INTO game(name) VALUES (?)",
+        car: "INSERT INTO car(name) VALUES (?)",
+        track: "INSERT INTO track(name) VALUES (?)",
+        record: "INSERT INTO record(time, player, car, track) VALUES (?, ?, ?, ?)"
     }
+}
+
+var initialData = {
+    players: ["Ralli-Pekka", "Matti Anttila"],
+    games: ["Forza 4", "WRC"],
+    cars: ["Radical SR8", "Focus WRC"],
+    tracks: ["Norschleife", "Ouninpohja"],
+    records: [
+        [9999, 1, 1, 1], 
+        [9912, 2, 1, 1],
+        [12942, 2, 2, 2]
+    ]
 }
 
 var Persistence = function() {
@@ -74,13 +90,30 @@ Persistence.prototype.open = function() {
         }
         else {
             console.log("Initializing database");
-            
-            sqlConst.initialize.forEach(function(clause) {
-                Persistence.db.run(clause, function(error) {
-                    console.log("COMPLETE:", clause);
-                    if (error) {
-                        console.log(error);
-                    }
+            Persistence.db.serialize(function() {
+                   
+                sqlConst.initialize.forEach(function(clause) {
+                    Persistence.db.run(clause, function(error) {
+                        console.log("COMPLETE:", clause);
+                        if (error) {
+                            console.log(error);
+                        }
+                    });
+                });
+                initialData.players.forEach(function(values) {
+                    Persistence.prototype.insert("player", values, function() { console.log("Inserted player", values); });
+                });
+                initialData.games.forEach(function(values) {
+                    Persistence.prototype.insert("game", values, function() { console.log("Inserted game", values); });
+                });
+                initialData.cars.forEach(function(values) {
+                    Persistence.prototype.insert("car", values, function() { console.log("Inserted car", values); });
+                });
+                initialData.tracks.forEach(function(values) {
+                    Persistence.prototype.insert("track", values, function() { console.log("Inserted track", values); });
+                });
+                initialData.records.forEach(function(values) {
+                    Persistence.prototype.insert("record", values, function() { console.log("Inserted record", values); });
                 });
             });
         }
@@ -100,10 +133,10 @@ Persistence.prototype.insert = function(table, values, callback) {
     var query = sqlConst.insert[table];
     if (query !== undefined) {
         var statement = Persistence.db.prepare(query);
-        statement.run(values, callback.bind(null, 200));
+        statement.run(values, callback.bind(null, true));
     }
     else {
-        callback(418, "Not found " + table);
+        callback(false, "Not found " + table);
     }
 };
 

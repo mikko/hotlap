@@ -68,7 +68,7 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding player");
 			persistence.insert("player", req.body.player, function(status, something) {
-				res.status(status).send("Added player");
+				res.status(status ? 200 : 418).send("Added player");
 			});
 		}
 	},
@@ -77,7 +77,7 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding game");
 			persistence.insert("game", req.body.game, function(status, something) {
-				res.status(status).send("Added game");
+				res.status(status ? 200 : 418).send("Added game");
 			});
 		}
 	},
@@ -86,7 +86,7 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding track");
 			persistence.insert("track", req.body.track, function(status, something) {
-				res.status(status).send("Added track");
+				res.status(status ? 200 : 418).send("Added track");
 			});
 		}
 	},
@@ -95,7 +95,7 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding car");
 			persistence.insert("car", req.body.car, function(status, something) {
-				res.status(status).send("Added car");
+				res.status(status ? 200 : 418).send("Added car");
 			});
 		}
 	},
