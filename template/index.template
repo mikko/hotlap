@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Laptimes</title>
+</head>
+<body>
+	
+	<pre class="players-list">
+		<%= players %>
+	</pre>
+	<pre class="games-list">
+		<%= games %>
+	</pre>
+	<pre class="tracks-list">
+		<%= tracks %>
+	</pre>
+	<pre class="cars-list">
+		<%= cars %>
+	</pre>
+	<pre class="records-list">
+		<%= records %>
+	</pre>
+
+	<div id="player">
+		<h3>
+			Add new player
+		</h3>
+		<form action="/v1/player" method="post">
+			<label for="player">player</label>
+			<input name="player" type="text">
+			<input type="submit">
+		</form>
+	</div>
+	<div id="game">
+		<h3>
+			Add new game
+		</h3>
+		<form action="/v1/game" method="post">
+			<label for="game">game</label>
+			<input name="game" type="text">
+			<input type="submit">
+		</form>
+	</div>
+	<div id="track">
+		<h3>
+			Add new track
+		</h3>
+		<form action="/v1/track" method="post">
+			<label for="gameid">gameid</label>
+			<input name="gameid" type="number">
+			<label for="track">track</label>
+			<input name="track" type="text">
+			<input type="submit">
+		</form>
+	</div>
+	<div id="car">
+		<h3>
+			Add new car
+		</h3>
+		<form action="/v1/car" method="post">
+			<label for="car">car</label>
+			<input name="car" type="text">
+			<label for="gameid">gameid</label>
+			<input name="gameid" type="number">
+			<input type="submit">
+		</form>
+	</div>
+	<div id="record">
+		<h3>
+			Add new record
+		</h3>
+		<form action="/v1/record" method="post">
+			<label for="gameid">gameid</label>
+			<input name="gameid" type="number">
+			<label for="trackid">trackid</label>
+			<input name="trackid" type="number">
+			<label for="carid">carid</label>
+			<input name="carid" type="number">
+			<label for="playerid">playerid</label>
+			<input name="playerid" type="number">
+			<label for="time">time</label>
+			<input name="time" type="integer">
+			<input type="submit">
+		</form>
+	</div>
+</body>
+</html>

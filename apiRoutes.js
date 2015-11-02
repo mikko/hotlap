@@ -1,16 +1,25 @@
 var persistence = require("./persistence");
 
-var apiPath = "/api";
+var apiPath = "/v1";
 
 var getRoutes = [
 	{
-		url: "/player",
+		url: "/:entity",
 		handler: function (req, res) {
-			persistence.fetch("player", [], function(result) {
+			persistence.fetchAll(req.params.entity, function(result) {
 				res.send(result);
 			});
 		}
 	},
+	{
+		url: "/:entity/:id",
+		handler: function (req, res) {
+			persistence.fetch(req.params.entity, req.params.id, function(result) {
+				res.send(result);
+			});
+		}
+	}
+	/*,
 	{
 		url: "/game",
 		handler: function (req, res) {
@@ -43,6 +52,14 @@ var getRoutes = [
 			});
 		}
 	},
+	{
+		url: "/toplist",
+		handler: function (req, res) {
+			persistence.fetch("record", [], function(result) {
+				res.send(result);
+			});
+		}
+	}*/
 ];
 
 var postRoutes = [
@@ -86,7 +103,17 @@ var postRoutes = [
 		url: "/record",
 		handler: function (req, res) {
 			console.log("Adding record");
-			res.status(200).send("TODO");
+			var params = [
+				req.body.time,
+				req.body.gameid,
+				req.body.playerid,
+				req.body.trackid,
+				req.body.carid
+			]
+			persistence.insert("record", params, function(status, something) {
+				console.log("Record inserted", JSON.stringify(params));
+			});
+			//res.status(200).send("TODO");
 			//persistence.insert("record", req.body.record, function(status, something) {
 			//});
 		}

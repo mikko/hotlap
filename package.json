@@ -4,13 +4,17 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "test": "mocha"
   },
   "author": "Mikko Pohja",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.14.1",
+    "chai": "^3.4.0",
     "express": "^4.13.3",
+    "lodash": "^3.10.1",
+    "mocha": "^2.3.3",
     "sqlite3": "^3.1.0"
   }
 }

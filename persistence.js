@@ -3,41 +3,67 @@ var sqlite3 = require('sqlite3').verbose();
 var sqlConst = {
     existsTest: "SELECT name FROM sqlite_master WHERE type='table' AND name='record'",
     initialize: [
-        "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT);",
-        "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT);",
-        "CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT);",
-        "CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT);",
+        "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT)",
+        "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT)",
+        "CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT)",        
+        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT, game INTEGER,",
+            "FOREIGN KEY(game) REFERENCES game(gameid))"
+        ].join(" "),
         ["CREATE TABLE record(recordid INTEGER PRIMARY KEY, ",
             "time INTEGER,", 
-            "game INTEGER,",
             "player INTEGER,",
-            "track INTEGER,",
             "car INTEGER,",
-            "FOREIGN KEY(game) REFERENCES game(gameid),",
+            "track INTEGER,",
             "FOREIGN KEY(player) REFERENCES player(playerid),",
-            "FOREIGN KEY(track) REFERENCES track(trackid),",
-            "FOREIGN KEY(car) REFERENCES car(carid)",
-            " );"
+            "FOREIGN KEY(car) REFERENCES car(carid),",
+            "FOREIGN KEY(track) REFERENCES track(trackid) )"
         ].join(" ")
     ],
     get: {
-        games: "SELECT gameid, name FROM game",
         players: "SELECT playerid, name FROM player",
         tracks: "SELECT trackid, name FROM track",
-        cars: "SELECT carid, name FROM car",
-        records: "SELECT recordid, name FROM record"
+        records: "SELECT * FROM record",
+        player: "SELECT * FROM player WHERE playerid = ?",
+        track: "SELECT * FROM track WHERE trackid = ?",
+        record: "SELECT * FROM record WHERE recordid = ?"
     },
     testTable: "record",
     insert: {
-        game: "INSERT INTO game(name) VALUES (?)",
         player: "INSERT INTO player(name) VALUES (?)",
-        track: "INSERT INTO track(name) VALUES (?)",
-        car: "INSERT INTO car(name) VALUES (?)",
-        record: "INSERT INTO record(time, game, player, track, car) VALUES (?, ?, ?, ?, ?)"
+        track: "INSERT INTO track(name, game, car) VALUES (?, ?, ?)",
+        record: "INSERT INTO record(time, player, track) VALUES (?, ?, ?)"
     }
 }
 
 var Persistence = function() {
+};
+
+Persistence.prototype.openWith = function(initialData, onReady) {
+    Persistence.db = new sqlite3.Database(':memory:');
+    
+    var queries = sqlConst.initialize.concat(initialData);
+
+    // A bit of a hack
+    var queriesReady = 0;
+    var ifReady = function() {
+        ++queriesReady;
+        if (queriesReady === queries.length) {
+            onReady();
+        }
+    }
+
+    Persistence.db.serialize(function() {
+        queries.forEach(function(query) {
+            Persistence.db.run(query, function(error) {
+                if (error) {
+                    console.log("Error running query", error);
+                }
+                else {
+                    ifReady();
+                }
+            });            
+        });
+    });
 };
 
 Persistence.prototype.open = function() {
@@ -61,6 +87,15 @@ Persistence.prototype.open = function() {
     });
 };
 
+Persistence.prototype.close = function() {
+    Persistence.db.close();
+    Persistence.db = null;
+};
+
+Persistence.prototype.rawGet = function(query, callback) {
+    Persistence.db.get(query, callback);
+}
+
 Persistence.prototype.insert = function(table, values, callback) {
     var query = sqlConst.insert[table];
     if (query !== undefined) {
@@ -72,14 +107,18 @@ Persistence.prototype.insert = function(table, values, callback) {
     }
 };
 
-Persistence.prototype.fetch = function(table, values, callback) {
+Persistence.prototype.fetchAll = function(table, callback) {
     var query = sqlConst.get[table + "s"];
     if (query !== undefined) {
         var result = [];
-        var statement = Persistence.db.each(query, function(err, row) {
+        console.log("Fetching", table);
+        Persistence.db.each(query, function(err, row) {
+            console.log("Fetched row", JSON.stringify(row));
             result.push(JSON.stringify(row));
         }, function() {
-            callback(result);
+            var response = {};
+            response[table + "s"] = result;
+            callback(response);
         });
         
     } else {
@@ -87,32 +126,28 @@ Persistence.prototype.fetch = function(table, values, callback) {
     }
 };
 
-/*
-console.log("Inserting initial data");
-                    var stmt = Persistence.db.prepare("INSERT INTO test VALUES (?)");
-                    for (var i = 0; i < 10; i++) {
-                        stmt.run("Ipsum " + i);
-                    }
-                    stmt.finalize(function() {
-                        console.log("Database initialized");
-                    });
-
-*/
+Persistence.prototype.fetch = function(table, values, callback) {
+    var query = sqlConst.get[table];
+    if (query !== undefined) {
+        var result = [];
+        console.log("Fetching", table);
+        var statement = Persistence.db.prepare(query);
+        
+        statement.each(values, function(err, row) {
+            console.log("Fetched row", JSON.stringify(row));
+            result.push(row);
+        }, function() {
+            var response = result;
+            callback(response);
+        });
+        
+    } else {
+        callback("Not found " + table);
+    }
+};
 
 Persistence.prototype.close = function() {
 	Persistence.db.close();
 };
 
-Persistence.prototype.test = function(cb) {
-	var results = [];
-	Persistence.db.serialize(function() {
-        Persistence.db.each("SELECT rowid AS id, info FROM test", function(err, row) {
-            console.log("Got result row");
-            results.push(row.id + ": " + row.info);
-        }, function() {
-            cb(results);
-        });
-	});
-};
- 
 module.exports = new Persistence();
