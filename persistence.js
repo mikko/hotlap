@@ -173,9 +173,7 @@ Persistence.prototype.fetchAll = function(table, callback) {
     var query = sqlConst.get[table + "s"];
     if (query !== undefined) {
         var result = [];
-        console.log("Fetching", table);
         Persistence.db.each(query, function(err, row) {
-            console.log("Fetched row", JSON.stringify(row));
             result.push(JSON.stringify(row));
         }, function() {
             var response = {};
@@ -192,11 +190,9 @@ Persistence.prototype.fetch = function(table, values, callback) {
     var query = sqlConst.get[table];
     if (query !== undefined) {
         var result = [];
-        console.log("Fetching", table);
         var statement = Persistence.db.prepare(query);
         
         statement.each(values, function(err, row) {
-            console.log("Fetched row", JSON.stringify(row));
             result.push(row);
         }, function() {
             var response = result;
@@ -212,11 +208,9 @@ Persistence.prototype.fetchFull = function(table, values, callback) {
     var query = sqlConst.get[table + "Full"];
     if (query !== undefined) {
         var result = [];
-        console.log("Fetching full info", table);
         var statement = Persistence.db.prepare(query);
         
         statement.each(values, function(err, row) {
-            console.log("Fetched row", JSON.stringify(row));
             result.push(row);
         }, function() {
             var response = result;
