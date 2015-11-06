@@ -18,48 +18,16 @@ var getRoutes = [
 				res.send(result);
 			});
 		}
+	},
+	{
+		url: "/:entity/:id/full",
+		handler: function (req, res) {
+			persistence.fetchFull(req.params.entity, req.params.id, function(result) {
+				res.send(result);
+			});
+		}
 	}
-	/*,
-	{
-		url: "/game",
-		handler: function (req, res) {
-			persistence.fetch("game", [], function(result) {
-				res.send(result);
-			});
-		}
-	},
-	{
-		url: "/track",
-		handler: function (req, res) {
-			persistence.fetch("track", [], function(result) {
-				res.send(result);
-			});
-		}
-	},
-	{
-		url: "/car",
-		handler: function (req, res) {
-			persistence.fetch("car", [], function(result) {
-				res.send(result);
-			});
-		}
-	},
-	{
-		url: "/record",
-		handler: function (req, res) {
-			persistence.fetch("record", [], function(result) {
-				res.send(result);
-			});
-		}
-	},
-	{
-		url: "/toplist",
-		handler: function (req, res) {
-			persistence.fetch("record", [], function(result) {
-				res.send(result);
-			});
-		}
-	}*/
+	
 ];
 
 var postRoutes = [

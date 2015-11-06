@@ -5,49 +5,81 @@ var sqlConst = {
     initialize: [
         "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT)",
         "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT)",
-        "CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT)",        
-        "CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT)",
+        ["CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT,",
+            "game INTEGER,",
+            "FOREIGN KEY(game) REFERENCES game(gameid))"
+        ].join(" "),        
+        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT,",
+            "game INTEGER,",
+            "FOREIGN KEY(game) REFERENCES game(gameid))"
+        ].join(" "),
+        ["CREATE TABLE contest(contestid INTEGER PRIMARY KEY, ",
+            "game INTEGER,",
+            "car INTEGER,",
+            "track INTEGER,",
+            "FOREIGN KEY(game) REFERENCES game(gameid),",
+            "FOREIGN KEY(car) REFERENCES car(carid),",
+            "FOREIGN KEY(track) REFERENCES track(trackid) )"
+        ].join(" "),
         ["CREATE TABLE record(recordid INTEGER PRIMARY KEY, ",
             "time INTEGER,", 
             "player INTEGER,",
-            "car INTEGER,",
-            "track INTEGER,",
+            "contest INTEGER,",
             "FOREIGN KEY(player) REFERENCES player(playerid),",
-            "FOREIGN KEY(car) REFERENCES car(carid),",
-            "FOREIGN KEY(track) REFERENCES track(trackid) )"
+            "FOREIGN KEY(contest) REFERENCES contest(contestid))",
+            
         ].join(" ")
     ],
     get: {
-        players: "SELECT playerid, name FROM player",
+        // All
+        players: "SELECT * FROM player",
         games: "SELECT * FROM game",
         cars: "SELECT * FROM car",
-        tracks: "SELECT trackid, name FROM track",
+        tracks: "SELECT * FROM track",
         records: "SELECT * FROM record",
+        contests: "SELECT * FROM contest",
+        // By id
         player: "SELECT * FROM player WHERE playerid = ?",
         game: "SELECT * FROM game WHERE gameid = ?",
         car: "SELECT * FROM car WHERE carid = ?",
         track: "SELECT * FROM track WHERE trackid = ?",
-        record: "SELECT * FROM record WHERE recordid = ?"
+        record: "SELECT * FROM record WHERE recordid = ?",
+        contest: "SELECT * FROM contest WHERE contestid = ?",
+        // Full data
+        contestFull: [
+            "SELECT time, name FROM record, player",
+            "WHERE recordid = ? AND record.player=player.playerid"
+        ].join(" ")
     },
     testTable: "record",
     insert: {
         player: "INSERT INTO player(name) VALUES (?)",
         game: "INSERT INTO game(name) VALUES (?)",
-        car: "INSERT INTO car(name) VALUES (?)",
-        track: "INSERT INTO track(name) VALUES (?)",
-        record: "INSERT INTO record(time, player, car, track) VALUES (?, ?, ?, ?)"
+        car: "INSERT INTO car(name, game) VALUES (?, ?)",
+        track: "INSERT INTO track(name, game) VALUES (?, ?)",
+        record: "INSERT INTO record(time, player, contest) VALUES (?, ?, ?)",
+        contest: "INSERT INTO contest(game, car, track) VALUES (?, ?, ?)"
     }
 }
 
 var initialData = {
     players: ["Ralli-Pekka", "Matti Anttila"],
     games: ["Forza 4", "WRC"],
-    cars: ["Radical SR8", "Focus WRC"],
-    tracks: ["Norschleife", "Ouninpohja"],
+    cars: [
+        ["Radical SR8", 1], 
+        ["Focus WRC", 2]
+    ],
+    tracks: [
+        ["Norschleife", 1], 
+        ["Ouninpohja", 2]
+    ],
+    contests: [
+        [1, 1, 1]
+    ],
     records: [
-        [9999, 1, 1, 1], 
-        [9912, 2, 1, 1],
-        [12942, 2, 2, 2]
+        [9999, 1, 1], 
+        [9912, 2, 1],
+        [12942, 2, 1]
     ]
 }
 
@@ -112,6 +144,9 @@ Persistence.prototype.open = function() {
                 initialData.tracks.forEach(function(values) {
                     Persistence.prototype.insert("track", values, function() { console.log("Inserted track", values); });
                 });
+                initialData.contests.forEach(function(values) {
+                    Persistence.prototype.insert("contest", values, function() { console.log("Inserted contest", values); });
+                });
                 initialData.records.forEach(function(values) {
                     Persistence.prototype.insert("record", values, function() { console.log("Inserted record", values); });
                 });
@@ -164,6 +199,26 @@ Persistence.prototype.fetch = function(table, values, callback) {
     if (query !== undefined) {
         var result = [];
         console.log("Fetching", table);
+        var statement = Persistence.db.prepare(query);
+        
+        statement.each(values, function(err, row) {
+            console.log("Fetched row", JSON.stringify(row));
+            result.push(row);
+        }, function() {
+            var response = result;
+            callback(response);
+        });
+        
+    } else {
+        callback("Not found " + table);
+    }
+};
+
+Persistence.prototype.fetchFull = function(table, values, callback) {
+    var query = sqlConst.get[table + "Full"];
+    if (query !== undefined) {
+        var result = [];
+        console.log("Fetching full info", table);
         var statement = Persistence.db.prepare(query);
         
         statement.each(values, function(err, row) {

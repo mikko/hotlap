@@ -4,23 +4,6 @@
 	<title>Laptimes</title>
 </head>
 <body>
-	
-	<pre class="players-list">
-		<%= players %>
-	</pre>
-	<pre class="games-list">
-		<%= games %>
-	</pre>
-	<pre class="tracks-list">
-		<%= tracks %>
-	</pre>
-	<pre class="cars-list">
-		<%= cars %>
-	</pre>
-	<pre class="records-list">
-		<%= records %>
-	</pre>
-
 	<div id="player">
 		<h3>
 			Add new player
@@ -83,5 +66,28 @@
 			<input type="submit">
 		</form>
 	</div>
+
+<!-- Data dump -->	
+	<pre class="players-list">
+<%= players %>
+	</pre>
+	<pre class="games-list">
+<%= games %>
+	</pre>
+	<pre class="tracks-list">
+<%= tracks %>
+	</pre>
+	<pre class="cars-list">
+<%= cars %>
+	</pre>
+	<pre class="records-list">
+<%= records %>
+	</pre>
+	<pre class="contests-list">
+<%= contests %>
+	</pre>
+
+
+
 </body>
 </html>

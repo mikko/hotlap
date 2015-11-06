@@ -15,14 +15,24 @@ persistence.open();
 app.get("/admin", function (req, res) {
 	var templateFile = require("fs").readFileSync("./template/index.template");
 	var renderPage = _.template(templateFile);
-	var data = {
-		players: [],
-		games: [],
-		tracks: [],
-		cars: [],
-		records: []
+	// Myself in the future, I apologise this
+	var queryCount = 6;
+	var queriesReady = 0;
+	var data = {};
+	var saveResult = function(key, result) {
+		++queriesReady;
+		data[key] = JSON.stringify(result, null, 2);
+		if (queryCount == queriesReady) {
+			res.send(renderPage(data));
+		}
 	}
-	res.send(renderPage(data));
+	persistence.fetchAll("player", saveResult.bind(null, "players"));
+	persistence.fetchAll("game", saveResult.bind(null, "games"));
+	persistence.fetchAll("track", saveResult.bind(null, "tracks"));
+	persistence.fetchAll("car", saveResult.bind(null, "cars"));
+	persistence.fetchAll("record", saveResult.bind(null, "records"));
+	persistence.fetchAll("contest", saveResult.bind(null, "contests"));
+	
 });
 
 routes.getRoutes.forEach(function(route) {
