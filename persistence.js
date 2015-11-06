@@ -1,5 +1,6 @@
 var sqlite3 = require('sqlite3').verbose();
-		
+var fs = require("fs");
+
 var sqlConst = {
     existsTest: "SELECT name FROM sqlite_master WHERE type='table' AND name='record'",
     initialize: [
@@ -62,25 +63,18 @@ var sqlConst = {
     }
 }
 
+var games = JSON.parse(fs.readFileSync("./data/games.json"));
+var forzaCars = JSON.parse(fs.readFileSync("./data/forzaCars.json")).map(car => [car, 1]);
+var forzaTracks = JSON.parse(fs.readFileSync("./data/forzaTracks.json")).map(car => [car, 1]);
+var dirt3Cars = JSON.parse(fs.readFileSync("./data/dirt3Cars.json")).map(car => [car, 2]);
+
 var initialData = {
     players: ["Ralli-Pekka", "Matti Anttila"],
-    games: ["Forza 4", "WRC"],
-    cars: [
-        ["Radical SR8", 1], 
-        ["Focus WRC", 2]
-    ],
-    tracks: [
-        ["Norschleife", 1], 
-        ["Ouninpohja", 2]
-    ],
-    contests: [
-        [1, 1, 1]
-    ],
-    records: [
-        [9999, 1, 1], 
-        [9912, 2, 1],
-        [12942, 2, 1]
-    ]
+    games: games,
+    cars: forzaCars.concat(dirt3Cars),
+    tracks: forzaTracks,
+    contests: [],
+    records: []
 }
 
 var Persistence = function() {
