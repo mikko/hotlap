@@ -188,6 +188,7 @@ Persistence.prototype.close = function() {
 
 Persistence.prototype.rawGet = function(query) {
     return new Promise(function(resolve, reject) {
+        console.log("PREPARE THESE!!!");
         Persistence.db.get(query, resolve);
     });
 }
@@ -233,7 +234,7 @@ Persistence.prototype.fetch = function(table, values) {
             statement.each(values, function(err, row) {
                 result.push(row);
             }, function() {
-                var response = result;
+                var response = result.length === 1 ? result[0] : result;
                 resolve(response);
             });
             

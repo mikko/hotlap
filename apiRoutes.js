@@ -43,14 +43,6 @@ var getRoutes = [
 
 			// Get list of contests
 			var parseContests = function(data) {
-				var games = data.games;
-				var tracks = data.tracks;
-				var cars = data.cars;
-				data.contests.forEach(contest => {
-					games.push(contest.game);
-					tracks.push(contest.track);
-					cars.push(contest.car);
-				});
 				res.send(data);
 			}
 			var contests = persistence.fetchAll("contest")
@@ -63,18 +55,59 @@ var getRoutes = [
 	{
 		url: "/contest/:id",
 		handler: function(req, res) {
-			// Get contest data
+			var getGames = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					persistence.fetch("game", dataObj.game)
+						.then(function(dbData) {
+							dataObj.game = dbData.name;
+							resolve(dataObj);
+						});
+				});
+			};
+			// Get related tracks
+			var getTracks = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					persistence.fetch("track", dataObj.track)
+						.then(function(dbData) {
+							dataObj.track = dbData.name;
+							resolve(dataObj);
+						});
+				});
+			};
+			// Get related cars
+			var getCars = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					persistence.fetch("car", dataObj.car)
+						.then(function(dbData) {
+							dataObj.car = dbData.name;
+							resolve(dataObj);
+						});
+				});
+			};
 
-			// Get related game
+			// Get related cars
+			var getRecords = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					var query = "SELECT * FROM record WHERE contest = " + dataObj.contestid;
+					persistence.rawGet(query)
+						.then(function(dbData) {
+							dataObj.records = dbData;
+							resolve(dataObj);
+						});
+				});
+			};
 
-			// Get related data.track
-
-			// Get related car
-
-			// Get related records
-
-			
-			res.send("TODO");
+			// Get list of contests
+			var parseContests = function(data) {
+				data.records = data.records || [];
+				res.send(data);
+			}
+			var contests = persistence.fetch("contest", req.params.id)
+				.then(getGames)
+				.then(getTracks)
+				.then(getCars)
+				.then(getRecords)
+				.then(parseContests);
 		}
 	},
 	{
