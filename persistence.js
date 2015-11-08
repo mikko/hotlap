@@ -47,6 +47,14 @@ var sqlConst = {
         track: "SELECT * FROM track WHERE trackid = ?",
         record: "SELECT * FROM record WHERE recordid = ?",
         contest: "SELECT * FROM contest WHERE contestid = ?",
+        // By id in list
+        playersIn: "SELECT * FROM player WHERE playerid IN ",
+        gamesIn: "SELECT * FROM game WHERE gameid IN ",
+        carsIn: "SELECT * FROM car WHERE carid IN ",
+        tracksIn: "SELECT * FROM track WHERE trackid IN ",
+        recordsIn: "SELECT * FROM record WHERE recordid IN ",
+        contestsIn: "SELECT * FROM contest WHERE contestid IN ",
+        
         // Full data
         contestFull: [
             "SELECT time, name FROM record, player",
@@ -218,6 +226,28 @@ Persistence.prototype.fetchAll = function(table) {
 Persistence.prototype.fetch = function(table, values) {
     return new Promise(function(resolve,reject) {
         var query = sqlConst.get[table];
+        if (query !== undefined) {
+            var result = [];
+            var statement = Persistence.db.prepare(query);
+            
+            statement.each(values, function(err, row) {
+                result.push(row);
+            }, function() {
+                var response = result;
+                resolve(response);
+            });
+            
+        } else {
+            reject("Not found " + table);
+        }
+    });
+};
+
+Persistence.prototype.fetchIn = function(table, values) {
+    return new Promise(function(resolve,reject) {
+        var query = sqlConst.get[table + "sIn"];
+        query += "(" + values.map(x => "?") + ")";
+        console.log("Fetch IN", query);
         if (query !== undefined) {
             var result = [];
             var statement = Persistence.db.prepare(query);

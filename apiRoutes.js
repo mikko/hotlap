@@ -8,32 +8,55 @@ var getRoutes = [
 		url: "/contest",
 		handler: function(req, res) {
 			// Get related games
-			var getGames = function(gameIds) {
-				
-				return {};
-			}
+			var getGames = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					var gameIds = dataObj.contests.map(contest => contest.game);
+					persistence.fetchIn("game", gameIds)
+						.then(function(dbData) {
+							dataObj.games = dbData;
+							resolve(dataObj);
+						});
+				});
+			};
 			// Get related tracks
-			var getTracks = function(trackIds) {
-				return {};
-			}
+			var getTracks = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					var trackIds = dataObj.contests.map(contest => contest.track);
+					persistence.fetchIn("track", trackIds)
+						.then(function(dbData) {
+							dataObj.tracks = dbData;
+							resolve(dataObj);
+						});
+				});
+			};
 			// Get related cars
-			var getCars = function(carIds) {
-				return {};
-			}
+			var getCars = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					var carIds = dataObj.contests.map(contest => contest.car);
+						persistence.fetchIn("car", carIds)
+							.then(function(dbData) {
+								dataObj.cars = dbData;
+								resolve(dataObj);
+							});
+				});
+			};
 
 			// Get list of contests
 			var parseContests = function(data) {
-				var games = [];
-				var tracks = [];
-				var cars = [];
+				var games = data.games;
+				var tracks = data.tracks;
+				var cars = data.cars;
 				data.contests.forEach(contest => {
 					games.push(contest.game);
 					tracks.push(contest.track);
 					cars.push(contest.car);
 				});
-				res.send(JSON.stringify({games: games, tracks: tracks, cars: cars}));
+				res.send(data);
 			}
 			var contests = persistence.fetchAll("contest")
+				.then(getGames)
+				.then(getTracks)
+				.then(getCars)
 				.then(parseContests);
 		}
 	},
