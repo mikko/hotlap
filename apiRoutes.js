@@ -172,8 +172,8 @@ var postRoutes = [
 	{
 		url: "/track",
 		handler: function (req, res) {
-			console.log("Adding track");
-			persistence.insert("track", req.body.track)
+			console.log("Adding track", JSON.stringify(req.body));
+			persistence.insert("track", [req.body.track, req.body.game])
 				.then(function(status) {
 					res.status(status ? 200 : 418).send("Added track");
 				});
@@ -183,7 +183,17 @@ var postRoutes = [
 		url: "/car",
 		handler: function (req, res) {
 			console.log("Adding car");
-			persistence.insert("car", req.body.car)
+			persistence.insert("car", [req.body.car, req.body.game])
+				.then(function(status) {
+					res.status(status ? 200 : 418).send("Added car");
+				});
+		}
+	},
+	{
+		url: "/contest",
+		handler: function (req, res) {
+			console.log("Adding contest");
+			persistence.insert("car", [req.body.game, req.body.car, req.body.track])
 				.then(function(status) {
 					res.status(status ? 200 : 418).send("Added car");
 				});

@@ -21,17 +21,23 @@ app.get("/admin", function (req, res) {
 	var data = {};
 	var saveResult = function(key, result) {
 		++queriesReady;
-		data[key] = JSON.stringify(result, null, 2);
+		data[key] = result[key];
 		if (queryCount == queriesReady) {
 			res.send(renderPage(data));
 		}
 	}
-	persistence.fetchAll("player", saveResult.bind(null, "players"));
-	persistence.fetchAll("game", saveResult.bind(null, "games"));
-	persistence.fetchAll("track", saveResult.bind(null, "tracks"));
-	persistence.fetchAll("car", saveResult.bind(null, "cars"));
-	persistence.fetchAll("record", saveResult.bind(null, "records"));
-	persistence.fetchAll("contest", saveResult.bind(null, "contests"));
+	persistence.fetchAll("player")
+		.then(saveResult.bind(null, "players"));
+	persistence.fetchAll("game")
+		.then(saveResult.bind(null, "games"));
+	persistence.fetchAll("track")
+		.then(saveResult.bind(null, "tracks"));
+	persistence.fetchAll("car")
+		.then(saveResult.bind(null, "cars"));
+	persistence.fetchAll("record")
+		.then(saveResult.bind(null, "records"));
+	persistence.fetchAll("contest")
+		.then(saveResult.bind(null, "contests"));
 	
 });
 

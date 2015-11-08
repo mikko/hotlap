@@ -4,6 +4,31 @@
 	<title>Hotlap - Admin</title>
 </head>
 <body>
+	
+	<select>
+		<% _.forEach(games, function(game) { %>
+			<option value="<%- game.gameid %>"><%- game.name %></option>
+		<% }); %>
+	</select>
+
+	<select>
+		<% _.forEach(cars, function(car) { %>
+			<option value="<%- car.carid %>"><%- car.name %></option>
+		<% }); %>
+	</select>
+
+	<select>
+		<% _.forEach(tracks, function(track) { %>
+			<option value="<%- track.trackid %>"><%- track.name %></option>
+		<% }); %>
+	</select>
+
+	<select>
+		<% _.forEach(players, function(player) { %>
+			<option value="<%- player.playerid %>"><%- player.name %></option>
+		<% }); %>
+	</select>
+
 	<div id="player">
 		<h3>
 			Add new player
@@ -29,8 +54,13 @@
 			Add new track
 		</h3>
 		<form action="/v1/track" method="post">
-			<label for="gameid">gameid</label>
-			<input name="gameid" type="number">
+			<label for="gameid">game</label>
+			<select name="game">
+				<% _.forEach(games, function(game) { %>
+					<option value="<%- game.gameid %>"><%- game.name %></option>
+				<% }); %>
+			</select>
+
 			<label for="track">track</label>
 			<input name="track" type="text">
 			<input type="submit">
@@ -41,13 +71,19 @@
 			Add new car
 		</h3>
 		<form action="/v1/car" method="post">
+			<label for="game">game</label>
+			<select name="game">
+				<% _.forEach(games, function(game) { %>
+					<option value="<%- game.gameid %>"><%- game.name %></option>
+				<% }); %>
+			</select>
 			<label for="car">car</label>
 			<input name="car" type="text">
-			<label for="gameid">gameid</label>
-			<input name="gameid" type="number">
+			
 			<input type="submit">
 		</form>
 	</div>
+	<!--
 	<div id="record">
 		<h3>
 			Add new record
@@ -66,25 +102,25 @@
 			<input type="submit">
 		</form>
 	</div>
-
+-->
 <!-- Data dump -->	
 	<pre class="players-list">
-<%= players %>
+<%= JSON.stringify(players, null, 4) %>
 	</pre>
 	<pre class="games-list">
-<%= games %>
+<%= JSON.stringify(games, null, 4) %>
 	</pre>
 	<pre class="tracks-list">
-<%= tracks %>
+<%= JSON.stringify(tracks, null, 4) %>
 	</pre>
 	<pre class="cars-list">
-<%= cars %>
+<%= JSON.stringify(cars, null, 4) %>
 	</pre>
 	<pre class="records-list">
-<%= records %>
+<%= JSON.stringify(records, null, 4) %>
 	</pre>
 	<pre class="contests-list">
-<%= contests %>
+<%= JSON.stringify(contests, null, 4) %>
 	</pre>
 
 
