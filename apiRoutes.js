@@ -1,3 +1,4 @@
+var _ = require("lodash");
 var persistence = require("./persistence");
 var Promise = require("bluebird");
 
@@ -43,7 +44,15 @@ var getRoutes = [
 
 			// Get list of contests
 			var parseContests = function(data) {
-				res.send(data);
+				data.contests.forEach(contest => {
+					var game = _.find(data.games, game => game.gameid === contest.game);
+					contest.game = game ? game.name : "error";
+					var track = _.find(data.tracks, track => track.trackid === contest.track);
+					contest.track = track ? track.name : "error";
+					var car = _.find(data.cars, car => car.carid === contest.car);
+					contest.car = car ? car.name : "error";
+				});
+				res.send({contests: data.contests});
 			}
 			var contests = persistence.fetchAll("contest")
 				.then(getGames)
