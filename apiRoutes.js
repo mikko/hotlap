@@ -193,9 +193,9 @@ var postRoutes = [
 		url: "/contest",
 		handler: function (req, res) {
 			console.log("Adding contest");
-			persistence.insert("car", [req.body.game, req.body.car, req.body.track])
+			persistence.insert("contest", [req.body.game, req.body.car, req.body.track])
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added car");
+					res.status(status ? 200 : 418).send("Added contest");
 				});
 		}
 	},

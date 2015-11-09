@@ -5,6 +5,7 @@
 </head>
 <body>
 	
+<!--
 	<select>
 		<% _.forEach(games, function(game) { %>
 			<option value="<%- game.gameid %>"><%- game.name %></option>
@@ -28,7 +29,7 @@
 			<option value="<%- player.playerid %>"><%- player.name %></option>
 		<% }); %>
 	</select>
-
+-->
 	<div id="player">
 		<h3>
 			Add new player
@@ -83,6 +84,31 @@
 			<input type="submit">
 		</form>
 	</div>
+	<div id="contest">
+		<h3>
+			Add new contest
+		</h3>
+		<form action="/v1/contest" method="post">
+			<label for="game">game</label>
+			<select name="game">
+				<% _.forEach(games, function(game) { %>
+					<option value="<%- game.gameid %>"><%- game.name %></option>
+				<% }); %>
+			</select>
+			<select name="car">
+				<% _.forEach(cars, function(car) { %>
+					<option value="<%- car.carid %>"><%- car.name %></option>
+				<% }); %>
+			</select>
+			<select name="track">
+				<% _.forEach(tracks, function(track) { %>
+					<option value="<%- track.trackid %>"><%- track.name %></option>
+				<% }); %>
+			</select>
+			<input type="submit">
+		</form>
+	</div>
+	
 	<!--
 	<div id="record">
 		<h3>
