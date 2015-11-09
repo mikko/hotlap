@@ -8,7 +8,14 @@ var bodyParser = require("body-parser");
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
-//app.use("/", express.static(path.resolve(__dirname, "index.html") ));
+
+const cors = (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Accept");
+    next();
+}
+app.use("/v1/*", cors);
 
 persistence.open();
 
