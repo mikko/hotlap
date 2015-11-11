@@ -5,28 +5,29 @@ var Promise = require("bluebird");
 var sqlConst = {
     existsTest: "SELECT name FROM sqlite_master WHERE type='table' AND name='record'",
     initialize: [
-        "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT)",
-        "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT)",
-        ["CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT,",
-            "game INTEGER,",
+        "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT NOT NULL)",
+        "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT NOT NULL)",
+        ["CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT NOT NULL,",
+            "game INTEGER NOT NULL,",
             "FOREIGN KEY(game) REFERENCES game(gameid))"
         ].join(" "),        
-        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT,",
-            "game INTEGER,",
+        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT NOT NULL,",
+            "game INTEGER NOT NULL,",
             "FOREIGN KEY(game) REFERENCES game(gameid))"
         ].join(" "),
         ["CREATE TABLE contest(contestid INTEGER PRIMARY KEY, ",
-            "game INTEGER,",
-            "car INTEGER,",
-            "track INTEGER,",
+            "game INTEGER NOT NULL,",
+            "car INTEGER NOT NULL,",
+            "track INTEGER NOT NULL,",
             "FOREIGN KEY(game) REFERENCES game(gameid),",
             "FOREIGN KEY(car) REFERENCES car(carid),",
             "FOREIGN KEY(track) REFERENCES track(trackid) )"
         ].join(" "),
         ["CREATE TABLE record(recordid INTEGER PRIMARY KEY, ",
-            "time INTEGER,", 
-            "player INTEGER,",
-            "contest INTEGER,",
+            "time INTEGER NOT NULL,", 
+            "player INTEGER NOT NULL,",
+            "contest INTEGER NOT NULL,",
+            "date INTEGER NOT NULL,",
             "FOREIGN KEY(player) REFERENCES player(playerid),",
             "FOREIGN KEY(contest) REFERENCES contest(contestid))",
             
@@ -67,7 +68,7 @@ var sqlConst = {
         game: "INSERT INTO game(name) VALUES (?)",
         car: "INSERT INTO car(name, game) VALUES (?, ?)",
         track: "INSERT INTO track(name, game) VALUES (?, ?)",
-        record: "INSERT INTO record(time, player, contest) VALUES (?, ?, ?)",
+        record: "INSERT INTO record(time, player, contest, date) VALUES (?, ?, ?, ?)",
         contest: "INSERT INTO contest(game, car, track) VALUES (?, ?, ?)"
     }
 }
@@ -186,10 +187,16 @@ Persistence.prototype.close = function() {
     Persistence.db = null;
 };
 
-Persistence.prototype.rawGet = function(query) {
+Persistence.prototype.rawGet = function(query, values) {
     return new Promise(function(resolve, reject) {
-        console.log("PREPARE THESE!!!");
-        Persistence.db.get(query, resolve);
+        var statement = Persistence.db.prepare(query);
+        var resolveWithValue = function(err, values) { 
+            if (err) {
+                console.log(query, values, err);
+            }
+            resolve(values); 
+        }
+        statement.all(values, resolveWithValue);
     });
 }
 
@@ -248,7 +255,6 @@ Persistence.prototype.fetchIn = function(table, values) {
     return new Promise(function(resolve,reject) {
         var query = sqlConst.get[table + "sIn"];
         query += "(" + values.map(x => "?") + ")";
-        console.log("Fetch IN", query);
         if (query !== undefined) {
             var result = [];
             var statement = Persistence.db.prepare(query);

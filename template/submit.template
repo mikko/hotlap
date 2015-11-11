@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hotlap - Admin</title>
+</head>
+<body>
+	
+	<div id="record">
+		<h3>
+			Add new laptime
+		</h3>
+		<form action="/v1/record" method="post">
+			<select name="contestid">
+				<% _.forEach(contests, function(contest) { %>
+					<option value="<%- contest.contestid %>"><%- contest.game %> - <%- contest.track %> - <%- contest.car %></option>
+				<% }); %>
+			</select>
+			<label for="playerid">playerid</label>
+			<select name="playerid">
+				<% _.forEach(players, function(player) { %>
+					<option value="<%- player.playerid %>"><%- player.name %></option>
+				<% }); %>
+				</select>
+			<label for="time">time</label>
+			<input name="time" type="integer">
+			<input type="submit">
+		</form>
+	</div>
+
+</body>
+</html>
