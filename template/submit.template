@@ -12,13 +12,13 @@
 		<form action="/v1/record" method="post">
 			<select name="leaderboardid">
 				<% _.forEach(leaderboards, function(leaderboard) { %>
-					<option value="<%- leaderboard.leaderboardid %>"><%- leaderboard.game %> - <%- leaderboard.track %> - <%- leaderboard.car %></option>
+					<option value="<%- leaderboard.id %>"><%- leaderboard.game %> - <%- leaderboard.track %> - <%- leaderboard.car %></option>
 				<% }); %>
 			</select>
 			<label for="playerid">playerid</label>
 			<select name="playerid">
 				<% _.forEach(players, function(player) { %>
-					<option value="<%- player.playerid %>"><%- player.name %></option>
+					<option value="<%- player.id %>"><%- player.name %></option>
 				<% }); %>
 				</select>
 			<label for="time">time</label>
