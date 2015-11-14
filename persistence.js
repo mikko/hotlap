@@ -31,7 +31,7 @@ var sqlConst = {
             "time INTEGER NOT NULL,", 
             "player INTEGER NOT NULL,",
             "leaderboard INTEGER NOT NULL,",
-            "date INTEGER NOT NULL,",
+            "date BIGINT NOT NULL,",
             "FOREIGN KEY(player) REFERENCES player(id),",
             "FOREIGN KEY(leaderboard) REFERENCES leaderboard(id))",
             
