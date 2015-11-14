@@ -153,6 +153,29 @@ var getRoutes = [
 				});
 			};
 
+			// Get related records
+			var getRecords = function(dataObj) {
+				return new Promise(function(resolve, reject) {
+					var query = [
+						"SELECT * FROM record", 
+						"JOIN player ",
+						"ON player.id = record.player",
+						"WHERE leaderboard IN (",
+						dataObj.leaderboards.map((lb, i) => "$" + (i + 1)),
+						")",
+						"ORDER BY time"
+					].join(" ");
+					var values = dataObj.leaderboards.map(lb => lb.id);
+					console.log(query, values);
+					persistence.rawGet(query, values)
+						.then(function(dbData) {
+							console.log("Records for", dataObj.leaderboards[0].id, dbData);
+							dataObj.records = dbData;
+							resolve(dataObj);
+						});
+				});
+			};
+
 			// Get list of leaderboards
 			var parseLeaderboards = function(data) {
 				data.leaderboards.forEach(leaderboard => {
@@ -162,6 +185,8 @@ var getRoutes = [
 					leaderboard.track = track ? track.name : "error";
 					var car = _.find(data.cars, car => car.id === leaderboard.car);
 					leaderboard.car = car ? car.name : "error";
+					var records = _.filter(data.records, records => records.leaderboard === leaderboard.id);
+					leaderboard.records = records || "error";
 				});
 				res.send({leaderboards: data.leaderboards});
 			};
@@ -169,6 +194,7 @@ var getRoutes = [
 				.then(getGames)
 				.then(getTracks)
 				.then(getCars)
+				.then(getRecords)
 				.then(parseLeaderboards);
 		}
 	},
