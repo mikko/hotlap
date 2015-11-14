@@ -91,11 +91,11 @@ var frontendRoutes = [
 				var renderPage = _.template(templateFile);
 
 				data.leaderboards.forEach(leaderboard => {
-					var game = _.find(data.games, game => game.gameid === leaderboard.game);
+					var game = _.find(data.games, game => game.id === leaderboard.game);
 					leaderboard.game = game ? game.name : "error";
-					var track = _.find(data.tracks, track => track.trackid === leaderboard.track);
+					var track = _.find(data.tracks, track => track.id === leaderboard.track);
 					leaderboard.track = track ? track.name : "error";
-					var car = _.find(data.cars, car => car.carid === leaderboard.car);
+					var car = _.find(data.cars, car => car.id === leaderboard.car);
 					leaderboard.car = car ? car.name : "error";
 				});
 				var pageContent = renderPage({
@@ -154,13 +154,13 @@ var getRoutes = [
 			};
 
 			// Get list of leaderboards
-			var parseleaderboards = function(data) {
+			var parseLeaderboards = function(data) {
 				data.leaderboards.forEach(leaderboard => {
-					var game = _.find(data.games, game => game.gameid === leaderboard.game);
+					var game = _.find(data.games, game => game.id === leaderboard.game);
 					leaderboard.game = game ? game.name : "error";
-					var track = _.find(data.tracks, track => track.trackid === leaderboard.track);
+					var track = _.find(data.tracks, track => track.id === leaderboard.track);
 					leaderboard.track = track ? track.name : "error";
-					var car = _.find(data.cars, car => car.carid === leaderboard.car);
+					var car = _.find(data.cars, car => car.id === leaderboard.car);
 					leaderboard.car = car ? car.name : "error";
 				});
 				res.send({leaderboards: data.leaderboards});
@@ -169,7 +169,7 @@ var getRoutes = [
 				.then(getGames)
 				.then(getTracks)
 				.then(getCars)
-				.then(parseleaderboards);
+				.then(parseLeaderboards);
 		}
 	},
 	{
@@ -205,17 +205,17 @@ var getRoutes = [
 				});
 			};
 
-			// Get related cars
+			// Get related records
 			var getRecords = function(dataObj) {
 				return new Promise(function(resolve, reject) {
 					var query = [
 						"SELECT * FROM record", 
 						"JOIN player ",
-						"ON player.playerid = record.player",
-						"WHERE leaderboard = ?",
+						"ON player.id = record.player",
+						"WHERE leaderboard = $1",
 						"ORDER BY time"
 					].join(" ");
-					persistence.rawGet(query, [dataObj.leaderboardid])
+					persistence.rawGet(query, [dataObj.leaderboard])
 						.then(function(dbData) {
 							dataObj.records = dbData;
 							resolve(dataObj);

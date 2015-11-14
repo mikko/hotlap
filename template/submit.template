@@ -10,9 +10,9 @@
 			Add new laptime
 		</h3>
 		<form action="/v1/record" method="post">
-			<select name="contestid">
-				<% _.forEach(contests, function(contest) { %>
-					<option value="<%- contest.contestid %>"><%- contest.game %> - <%- contest.track %> - <%- contest.car %></option>
+			<select name="leaderboardid">
+				<% _.forEach(leaderboards, function(leaderboard) { %>
+					<option value="<%- leaderboard.leaderboardid %>"><%- leaderboard.game %> - <%- leaderboard.track %> - <%- leaderboard.car %></option>
 				<% }); %>
 			</select>
 			<label for="playerid">playerid</label>

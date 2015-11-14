@@ -84,11 +84,11 @@
 			<input type="submit">
 		</form>
 	</div>
-	<div id="contest">
+	<div id="leaderboard">
 		<h3>
-			Add new contest
+			Add new leaderboard
 		</h3>
-		<form action="/v1/contest" method="post">
+		<form action="/v1/leaderboard" method="post">
 			<label for="game">game</label>
 			<select name="game">
 				<% _.forEach(games, function(game) { %>
@@ -145,8 +145,8 @@
 	<pre class="records-list">
 <%= JSON.stringify(records, null, 4) %>
 	</pre>
-	<pre class="contests-list">
-<%= JSON.stringify(contests, null, 4) %>
+	<pre class="leaderboards-list">
+<%= JSON.stringify(leaderboards, null, 4) %>
 	</pre>
 
 
