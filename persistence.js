@@ -1,35 +1,39 @@
-var sqlite3 = require('sqlite3').verbose();
+var _ = require("lodash");
+var pg = require("pg");
 var fs = require("fs");
 var Promise = require("bluebird");
 
+var connectionString = require("./dbConfig");
+
 var sqlConst = {
-    existsTest: "SELECT name FROM sqlite_master WHERE type='table' AND name='record'",
+    existsTest: "SELECT 1 FROM information_schema.tables WHERE table_name = 'record'",
     initialize: [
-        "CREATE TABLE player(playerid INTEGER PRIMARY KEY, name TEXT NOT NULL)",
-        "CREATE TABLE game(gameid INTEGER PRIMARY KEY, name TEXT NOT NULL)",
-        ["CREATE TABLE car(carid INTEGER PRIMARY KEY, name TEXT NOT NULL,",
+        "CREATE TABLE IF NOT EXISTS player(id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE)",
+        "CREATE TABLE IF NOT EXISTS game(id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE)",
+        ["CREATE TABLE IF NOT EXISTS car(id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE,",
             "game INTEGER NOT NULL,",
-            "FOREIGN KEY(game) REFERENCES game(gameid))"
+            "FOREIGN KEY(game) REFERENCES game(id))"
         ].join(" "),        
-        ["CREATE TABLE track(trackid INTEGER PRIMARY KEY, name TEXT NOT NULL,",
+        ["CREATE TABLE IF NOT EXISTS track(id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE,",
             "game INTEGER NOT NULL,",
-            "FOREIGN KEY(game) REFERENCES game(gameid))"
+            "FOREIGN KEY(game) REFERENCES game(id))"
         ].join(" "),
-        ["CREATE TABLE contest(contestid INTEGER PRIMARY KEY, ",
+        ["CREATE TABLE IF NOT EXISTS leaderboard(id SERIAL PRIMARY KEY, ",
             "game INTEGER NOT NULL,",
             "car INTEGER NOT NULL,",
             "track INTEGER NOT NULL,",
-            "FOREIGN KEY(game) REFERENCES game(gameid),",
-            "FOREIGN KEY(car) REFERENCES car(carid),",
-            "FOREIGN KEY(track) REFERENCES track(trackid) )"
+            "FOREIGN KEY(game) REFERENCES game(id),",
+            "FOREIGN KEY(car) REFERENCES car(id),",
+            "FOREIGN KEY(track) REFERENCES track(id),",
+            "CONSTRAINT unique_const UNIQUE (game, car, track))"
         ].join(" "),
-        ["CREATE TABLE record(recordid INTEGER PRIMARY KEY, ",
+        ["CREATE TABLE IF NOT EXISTS record(id SERIAL PRIMARY KEY, ",
             "time INTEGER NOT NULL,", 
             "player INTEGER NOT NULL,",
-            "contest INTEGER NOT NULL,",
+            "leaderboard INTEGER NOT NULL,",
             "date INTEGER NOT NULL,",
-            "FOREIGN KEY(player) REFERENCES player(playerid),",
-            "FOREIGN KEY(contest) REFERENCES contest(contestid))",
+            "FOREIGN KEY(player) REFERENCES player(id),",
+            "FOREIGN KEY(leaderboard) REFERENCES leaderboard(id))",
             
         ].join(" ")
     ],
@@ -40,36 +44,36 @@ var sqlConst = {
         cars: "SELECT * FROM car",
         tracks: "SELECT * FROM track",
         records: "SELECT * FROM record",
-        contests: "SELECT * FROM contest",
+        leaderboards: "SELECT * FROM leaderboard",
         // By id
-        player: "SELECT * FROM player WHERE playerid = ?",
-        game: "SELECT * FROM game WHERE gameid = ?",
-        car: "SELECT * FROM car WHERE carid = ?",
-        track: "SELECT * FROM track WHERE trackid = ?",
-        record: "SELECT * FROM record WHERE recordid = ?",
-        contest: "SELECT * FROM contest WHERE contestid = ?",
+        player: "SELECT * FROM player WHERE playerid = $1",
+        game: "SELECT * FROM game WHERE gameid = $1",
+        car: "SELECT * FROM car WHERE carid = $1",
+        track: "SELECT * FROM track WHERE trackid = $1",
+        record: "SELECT * FROM record WHERE recordid = $1",
+        leaderboard: "SELECT * FROM leaderboard WHERE leaderboardid = $1",
         // By id in list
         playersIn: "SELECT * FROM player WHERE playerid IN ",
         gamesIn: "SELECT * FROM game WHERE gameid IN ",
         carsIn: "SELECT * FROM car WHERE carid IN ",
         tracksIn: "SELECT * FROM track WHERE trackid IN ",
         recordsIn: "SELECT * FROM record WHERE recordid IN ",
-        contestsIn: "SELECT * FROM contest WHERE contestid IN ",
+        leaderboardsIn: "SELECT * FROM leaderboard WHERE leaderboardid IN ",
         
         // Full data
-        contestFull: [
+        leaderboardFull: [
             "SELECT time, name FROM record, player",
-            "WHERE recordid = ? AND record.player=player.playerid"
+            "WHERE recordid = $1 AND record.player=player.playerid"
         ].join(" ")
     },
     testTable: "record",
     insert: {
-        player: "INSERT INTO player(name) VALUES (?)",
-        game: "INSERT INTO game(name) VALUES (?)",
-        car: "INSERT INTO car(name, game) VALUES (?, ?)",
-        track: "INSERT INTO track(name, game) VALUES (?, ?)",
-        record: "INSERT INTO record(time, player, contest, date) VALUES (?, ?, ?, ?)",
-        contest: "INSERT INTO contest(game, car, track) VALUES (?, ?, ?)"
+        player: "INSERT INTO player(name) VALUES ($1)",
+        game: "INSERT INTO game(name) VALUES ($1)",
+        car: "INSERT INTO car(name, game) VALUES ($1, $2)",
+        track: "INSERT INTO track(name, game) VALUES ($1, $2)",
+        record: "INSERT INTO record(time, player, leaderboard, date) VALUES ($1, $2, $3, $4)",
+        leaderboard: "INSERT INTO leaderboard(game, car, track) VALUES ($1, $2, $3)"
     }
 }
 
@@ -83,7 +87,7 @@ var initialData = {
     games: games,
     cars: forzaCars.concat(dirt3Cars),
     tracks: forzaTracks,
-    contests: [
+    leaderboards: [
         [1,1,1],
         [1,2,2]
     ],
@@ -93,9 +97,10 @@ var initialData = {
 var Persistence = function() {
 };
 
+/*
 Persistence.prototype.openWith = function(initialData) {
     return new Promise(function(resolve, reject) {
-        Persistence.db = new sqlite3.Database(':memory:');
+        Persistence.db = new pg.Database(':memory:');
         
         var queries = sqlConst.initialize.concat(initialData);
 
@@ -122,9 +127,89 @@ Persistence.prototype.openWith = function(initialData) {
         });
     })
 };
+*/
 
-Persistence.prototype.open = function() {
-    Persistence.db = new sqlite3.Database('database.sqlite');
+Persistence.prototype.connect = function() {
+    return new Promise(function(resolve, reject) {
+        Persistence.db.connect(function(err, client, done) {
+            if (err) {
+                console.log(err);
+                reject();
+            }
+            resolve(client);
+        });
+    });
+};
+
+Persistence.prototype.init = function() {
+    console.log("Creating database handle ", connectionString);
+    Persistence.db = new pg.Client(connectionString);
+    Persistence.db.connect();
+    new Promise(function(resolve, reject) {
+        Persistence.db.query(sqlConst.existsTest,
+            function(err, result) { 
+                resolve(result); 
+            });
+        })
+        .then(function(result) {
+            var databaseInitialized = result.rows.length > 0;
+            console.log("Database initialized", databaseInitialized);
+            if (databaseInitialized) {
+                return;
+            }
+            else {
+                console.log("Initializing database");
+                sqlConst.initialize.forEach(function(clause) {
+                    Persistence.db.query(clause);
+                });
+                    
+                initialData.players.forEach(function(values) {
+                    Persistence.prototype.insert("player", values)
+                        .then(function(result) { 
+                            console.log("Inserted player", result); 
+                        });
+
+                });
+
+                initialData.games.forEach(function(values) {
+                    Persistence.prototype.insert("game", values)
+                        .then(function() { 
+                            console.log("Inserted game", values); 
+                        });
+                });
+                initialData.cars.forEach(function(values) {
+                    Persistence.prototype.insert("car", values)
+                        .then(function() { 
+                            console.log("Inserted car", values); 
+                        });
+                });
+                initialData.tracks.forEach(function(values) {
+                    Persistence.prototype.insert("track", values)
+                        .then(function() { 
+                            console.log("Inserted track", values); 
+                        });
+                });
+                initialData.leaderboards.forEach(function(values) {
+                    Persistence.prototype.insert("leaderboard", values)
+                        .then(function() { 
+                            console.log("Inserted leaderboard", values); 
+                        });
+                });
+                initialData.records.forEach(function(values) {
+                    Persistence.prototype.insert("record", values)
+                        .then(function() { 
+                            console.log("Inserted record", values); 
+                        });
+                });
+            }
+        });
+};
+
+
+Persistence.prototype.oldOpen = function() {
+    
+/*
+    Persistence.db.connect();
     Persistence.db.get(sqlConst.existsTest, function(error, row) {
         if (row !== undefined) {
             console.log("Database already initialized");
@@ -165,10 +250,10 @@ Persistence.prototype.open = function() {
                             console.log("Inserted track", values); 
                         });
                 });
-                initialData.contests.forEach(function(values) {
-                    Persistence.prototype.insert("contest", values)
+                initialData.leaderboards.forEach(function(values) {
+                    Persistence.prototype.insert("leaderboard", values)
                         .then(function() { 
-                            console.log("Inserted contest", values); 
+                            console.log("Inserted leaderboard", values); 
                         });
                 });
                 initialData.records.forEach(function(values) {
@@ -180,8 +265,9 @@ Persistence.prototype.open = function() {
             });
         }
     });
+*/
 };
-
+/*
 Persistence.prototype.close = function() {
     Persistence.db.close();
     Persistence.db = null;
@@ -199,20 +285,22 @@ Persistence.prototype.rawGet = function(query, values) {
         statement.all(values, resolveWithValue);
     });
 }
-
+*/
 Persistence.prototype.insert = function(table, values) {
     return new Promise(function(resolve, reject) {
         var query = sqlConst.insert[table];
-        if (query !== undefined) {
-            var statement = Persistence.db.prepare(query);
-            statement.run(values, resolve);
-        }
-        else {
-            reject();
-        }
+        values = _.isArray(values) ? values : [values];
+        console.log("Should now insert", query, values);
+        Persistence.db.query(query, values,
+            function(err, result) { 
+                if (err) {
+                    console.log("ERROR", err);
+                }
+                resolve(result); 
+            });
     });
 };
-
+/*
 Persistence.prototype.fetchAll = function(table) {
     return new Promise(function(resolve, reject) {
         var query = sqlConst.get[table + "s"];
@@ -275,5 +363,5 @@ Persistence.prototype.fetchIn = function(table, values) {
 Persistence.prototype.close = function() {
 	Persistence.db.close();
 };
-
+*/
 module.exports = new Persistence();

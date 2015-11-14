@@ -17,7 +17,7 @@ const cors = (req, res, next) => {
 }
 app.use("/v1/*", cors);
 
-persistence.open();
+persistence.init();
 
 routes.getRoutes.forEach(function(route) {
 	app.get(routes.apiPath + route.url, route.handler);
