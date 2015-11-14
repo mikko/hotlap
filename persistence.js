@@ -235,7 +235,6 @@ Persistence.prototype.insert = function(table, values) {
 Persistence.prototype.fetchAll = function(table) {
     return new Promise(function(resolve, reject) {
         var query = sqlConst.get[table + "s"];
-        console.log("Fetch all", table, query);
         if (query !== undefined) {
             var result = [];
             Persistence.db.query(query, function(err, result) {

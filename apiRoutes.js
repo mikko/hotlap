@@ -166,10 +166,8 @@ var getRoutes = [
 						"ORDER BY time"
 					].join(" ");
 					var values = dataObj.leaderboards.map(lb => lb.id);
-					console.log(query, values);
 					persistence.rawGet(query, values)
 						.then(function(dbData) {
-							console.log("Records for", dataObj.leaderboards[0].id, dbData);
 							dataObj.records = dbData;
 							resolve(dataObj);
 						});
