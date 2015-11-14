@@ -32,8 +32,8 @@ var frontendRoutes = [
 				.then(saveResult.bind(null, "cars"));
 			persistence.fetchAll("record")
 				.then(saveResult.bind(null, "records"));
-			persistence.fetchAll("contest")
-				.then(saveResult.bind(null, "contests"));
+			persistence.fetchAll("leaderboard")
+				.then(saveResult.bind(null, "leaderboards"));
 			
 		}
 	},
@@ -43,7 +43,7 @@ var frontendRoutes = [
 			// Get related games
 			var getGames = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var gameIds = dataObj.contests.map(contest => contest.game);
+					var gameIds = dataObj.leaderboards.map(leaderboard => leaderboard.game);
 					persistence.fetchIn("game", gameIds)
 						.then(function(dbData) {
 							dataObj.games = dbData;
@@ -54,7 +54,7 @@ var frontendRoutes = [
 			// Get related tracks
 			var getTracks = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var trackIds = dataObj.contests.map(contest => contest.track);
+					var trackIds = dataObj.leaderboards.map(leaderboard => leaderboard.track);
 					persistence.fetchIn("track", trackIds)
 						.then(function(dbData) {
 							dataObj.tracks = dbData;
@@ -65,7 +65,7 @@ var frontendRoutes = [
 			// Get related cars
 			var getCars = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var carIds = dataObj.contests.map(contest => contest.car);
+					var carIds = dataObj.leaderboards.map(leaderboard => leaderboard.car);
 						persistence.fetchIn("car", carIds)
 							.then(function(dbData) {
 								dataObj.cars = dbData;
@@ -85,44 +85,44 @@ var frontendRoutes = [
 				});
 			};
 
-			// Get list of contests
-			var parseContests = function(data) {
+			// Get list of leaderboards
+			var parseleaderboards = function(data) {
 				var templateFile = require("fs").readFileSync("./template/submit.template");
 				var renderPage = _.template(templateFile);
 
-				data.contests.forEach(contest => {
-					var game = _.find(data.games, game => game.gameid === contest.game);
-					contest.game = game ? game.name : "error";
-					var track = _.find(data.tracks, track => track.trackid === contest.track);
-					contest.track = track ? track.name : "error";
-					var car = _.find(data.cars, car => car.carid === contest.car);
-					contest.car = car ? car.name : "error";
+				data.leaderboards.forEach(leaderboard => {
+					var game = _.find(data.games, game => game.gameid === leaderboard.game);
+					leaderboard.game = game ? game.name : "error";
+					var track = _.find(data.tracks, track => track.trackid === leaderboard.track);
+					leaderboard.track = track ? track.name : "error";
+					var car = _.find(data.cars, car => car.carid === leaderboard.car);
+					leaderboard.car = car ? car.name : "error";
 				});
 				var pageContent = renderPage({
-					contests: data.contests,
+					leaderboards: data.leaderboards,
 					players: data.players
 				});
 				
 				res.send(pageContent);
 			};
-			var contests = persistence.fetchAll("contest")
+			var leaderboards = persistence.fetchAll("leaderboard")
 				.then(getGames)
 				.then(getTracks)
 				.then(getCars)
 				.then(getPlayers)
-				.then(parseContests);
+				.then(parseleaderboards);
 		}
 	}
 ];
 
 var getRoutes = [
 	{
-		url: "/contest",
+		url: "/leaderboard",
 		handler: function(req, res) {
 			// Get related games
 			var getGames = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var gameIds = dataObj.contests.map(contest => contest.game);
+					var gameIds = dataObj.leaderboards.map(leaderboard => leaderboard.game);
 					persistence.fetchIn("game", gameIds)
 						.then(function(dbData) {
 							dataObj.games = dbData;
@@ -133,7 +133,7 @@ var getRoutes = [
 			// Get related tracks
 			var getTracks = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var trackIds = dataObj.contests.map(contest => contest.track);
+					var trackIds = dataObj.leaderboards.map(leaderboard => leaderboard.track);
 					persistence.fetchIn("track", trackIds)
 						.then(function(dbData) {
 							dataObj.tracks = dbData;
@@ -144,7 +144,7 @@ var getRoutes = [
 			// Get related cars
 			var getCars = function(dataObj) {
 				return new Promise(function(resolve, reject) {
-					var carIds = dataObj.contests.map(contest => contest.car);
+					var carIds = dataObj.leaderboards.map(leaderboard => leaderboard.car);
 						persistence.fetchIn("car", carIds)
 							.then(function(dbData) {
 								dataObj.cars = dbData;
@@ -153,27 +153,27 @@ var getRoutes = [
 				});
 			};
 
-			// Get list of contests
-			var parseContests = function(data) {
-				data.contests.forEach(contest => {
-					var game = _.find(data.games, game => game.gameid === contest.game);
-					contest.game = game ? game.name : "error";
-					var track = _.find(data.tracks, track => track.trackid === contest.track);
-					contest.track = track ? track.name : "error";
-					var car = _.find(data.cars, car => car.carid === contest.car);
-					contest.car = car ? car.name : "error";
+			// Get list of leaderboards
+			var parseleaderboards = function(data) {
+				data.leaderboards.forEach(leaderboard => {
+					var game = _.find(data.games, game => game.gameid === leaderboard.game);
+					leaderboard.game = game ? game.name : "error";
+					var track = _.find(data.tracks, track => track.trackid === leaderboard.track);
+					leaderboard.track = track ? track.name : "error";
+					var car = _.find(data.cars, car => car.carid === leaderboard.car);
+					leaderboard.car = car ? car.name : "error";
 				});
-				res.send({contests: data.contests});
+				res.send({leaderboards: data.leaderboards});
 			};
-			var contests = persistence.fetchAll("contest")
+			var leaderboards = persistence.fetchAll("leaderboard")
 				.then(getGames)
 				.then(getTracks)
 				.then(getCars)
-				.then(parseContests);
+				.then(parseleaderboards);
 		}
 	},
 	{
-		url: "/contest/:id",
+		url: "/leaderboard/:id",
 		handler: function(req, res) {
 			var getGames = function(dataObj) {
 				return new Promise(function(resolve, reject) {
@@ -212,10 +212,10 @@ var getRoutes = [
 						"SELECT * FROM record", 
 						"JOIN player ",
 						"ON player.playerid = record.player",
-						"WHERE contest = ?",
+						"WHERE leaderboard = ?",
 						"ORDER BY time"
 					].join(" ");
-					persistence.rawGet(query, [dataObj.contestid])
+					persistence.rawGet(query, [dataObj.leaderboardid])
 						.then(function(dbData) {
 							dataObj.records = dbData;
 							resolve(dataObj);
@@ -223,8 +223,8 @@ var getRoutes = [
 				});
 			};
 
-			// Get list of contests
-			var parseContests = function(data) {
+			// Get list of leaderboards
+			var parseleaderboards = function(data) {
 				data.records = data.records
 					.map(record => { 
 						return { 
@@ -235,12 +235,12 @@ var getRoutes = [
 					});
 				res.send(data);
 			}
-			var contests = persistence.fetch("contest", req.params.id)
+			var leaderboards = persistence.fetch("leaderboard", req.params.id)
 				.then(getGames)
 				.then(getTracks)
 				.then(getCars)
 				.then(getRecords)
-				.then(parseContests);
+				.then(parseleaderboards);
 		}
 	},
 	{
@@ -314,12 +314,12 @@ var postRoutes = [
 		}
 	},
 	{
-		url: "/contest",
+		url: "/leaderboard",
 		handler: function (req, res) {
-			console.log("Adding contest");
-			persistence.insert("contest", [req.body.game, req.body.car, req.body.track])
+			console.log("Adding leaderboard");
+			persistence.insert("leaderboard", [req.body.game, req.body.car, req.body.track])
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added contest");
+					res.status(status ? 200 : 418).send("Added leaderboard");
 				});
 		}
 	},
@@ -330,7 +330,7 @@ var postRoutes = [
 			var params = [
 				req.body.time,
 				req.body.playerid,
-				req.body.contestid,
+				req.body.leaderboardid,
 				new Date().getTime()
 			]
 			persistence.insert("record", params)
