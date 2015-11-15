@@ -19,18 +19,17 @@ app.use("/v1/*", cors);
 
 persistence.init();
 
-routes.getRoutes.forEach(function(route) {
-	app.get(routes.apiPath + route.url, route.handler);
+routes.frontendRoutes.forEach(function(route) {
+	app.get("/backdoor" + route.url, route.handler);
 });
 
-routes.frontendRoutes.forEach(function(route) {
-	app.get(route.url, route.handler);
-})
+routes.getRoutes.forEach(function(route) {
+  app.get(routes.apiPath + route.url, route.handler);
+});
 
 routes.postRoutes.forEach(function(route) {
-	app.post(routes.apiPath + route.url, route.handler);
+  app.post(routes.apiPath + route.url, route.handler);
 });
-
 
 var server = app.listen(3000, function () {
   var host = server.address().address;
