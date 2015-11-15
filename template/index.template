@@ -4,32 +4,6 @@
 	<title>Hotlap - Admin</title>
 </head>
 <body>
-	
-<!--
-	<select>
-		<% _.forEach(games, function(game) { %>
-			<option value="<%- game.gameid %>"><%- game.name %></option>
-		<% }); %>
-	</select>
-
-	<select>
-		<% _.forEach(cars, function(car) { %>
-			<option value="<%- car.carid %>"><%- car.name %></option>
-		<% }); %>
-	</select>
-
-	<select>
-		<% _.forEach(tracks, function(track) { %>
-			<option value="<%- track.trackid %>"><%- track.name %></option>
-		<% }); %>
-	</select>
-
-	<select>
-		<% _.forEach(players, function(player) { %>
-			<option value="<%- player.playerid %>"><%- player.name %></option>
-		<% }); %>
-	</select>
--->
 	<div id="player">
 		<h3>
 			Add new player
@@ -58,7 +32,7 @@
 			<label for="gameid">game</label>
 			<select name="game">
 				<% _.forEach(games, function(game) { %>
-					<option value="<%- game.gameid %>"><%- game.name %></option>
+					<option value="<%- game.id %>"><%- game.name %></option>
 				<% }); %>
 			</select>
 
@@ -75,7 +49,7 @@
 			<label for="game">game</label>
 			<select name="game">
 				<% _.forEach(games, function(game) { %>
-					<option value="<%- game.gameid %>"><%- game.name %></option>
+					<option value="<%- game.id %>"><%- game.name %></option>
 				<% }); %>
 			</select>
 			<label for="car">car</label>
@@ -92,17 +66,17 @@
 			<label for="game">game</label>
 			<select name="game">
 				<% _.forEach(games, function(game) { %>
-					<option value="<%- game.gameid %>"><%- game.name %></option>
+					<option value="<%- game.id %>"><%- game.name %></option>
 				<% }); %>
 			</select>
 			<select name="car">
 				<% _.forEach(cars, function(car) { %>
-					<option value="<%- car.carid %>"><%- car.name %></option>
+					<option value="<%- car.id %>"><%- car.name %></option>
 				<% }); %>
 			</select>
 			<select name="track">
 				<% _.forEach(tracks, function(track) { %>
-					<option value="<%- track.trackid %>"><%- track.name %></option>
+					<option value="<%- track.id %>"><%- track.name %></option>
 				<% }); %>
 			</select>
 			<input type="submit">
