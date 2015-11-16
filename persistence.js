@@ -1,6 +1,7 @@
 var _ = require("lodash");
 var pg = require("pg");
 var fs = require("fs");
+var path = require("path");
 var Promise = require("bluebird");
 
 var connectionString = require("./dbConfig");
@@ -77,57 +78,8 @@ var sqlConst = {
     }
 }
 
-var games = JSON.parse(fs.readFileSync("./data/games.json"));
-var forzaCars = JSON.parse(fs.readFileSync("./data/forzaCars.json")).map(car => [car, 1]);
-var forzaTracks = JSON.parse(fs.readFileSync("./data/forzaTracks.json")).map(car => [car, 1]);
-var dirt3Cars = JSON.parse(fs.readFileSync("./data/dirt3Cars.json")).map(car => [car, 2]);
-
-var initialData = {
-    players: ["Ralli-Pekka", "Matti Anttila"],
-    games: games,
-    cars: forzaCars.concat(dirt3Cars),
-    tracks: forzaTracks,
-    leaderboards: [
-        [1,1,1],
-        [1,2,2]
-    ],
-    records: []
-}
-
 var Persistence = function() {
 };
-
-/*
-Persistence.prototype.openWith = function(initialData) {
-    return new Promise(function(resolve, reject) {
-        Persistence.db = new pg.Database(':memory:');
-        
-        var queries = sqlConst.initialize.concat(initialData);
-
-        // A bit of a hack
-        var queriesReady = 0;
-        var ifReady = function() {
-            ++queriesReady;
-            if (queriesReady === queries.length) {
-                resolve();
-            }
-        }
-
-        Persistence.db.serialize(function() {
-            queries.forEach(function(query) {
-                Persistence.db.run(query, function(error) {
-                    if (error) {
-                        console.log("Error running query", error);
-                    }
-                    else {
-                        ifReady();
-                    }
-                });            
-            });
-        });
-    })
-};
-*/
 
 Persistence.prototype.connect = function() {
     return new Promise(function(resolve, reject) {
@@ -158,6 +110,24 @@ Persistence.prototype.init = function() {
                 return;
             }
             else {
+                var games = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./data/games.json")));
+                var forzaCars = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./data/forzaCars.json"))).map(car => [car, 1]);
+                var forzaTracks = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./data/forzaTracks.json"))).map(car => [car, 1]);
+                var dirt3Cars = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./data/dirt3Cars.json"))).map(car => [car, 2]);
+
+                var initialData = {
+                    players: ["Ralli-Pekka", "Matti Anttila"],
+                    games: games,
+                    cars: forzaCars.concat(dirt3Cars),
+                    tracks: forzaTracks,
+                    leaderboards: [
+                        [1,1,1],
+                        [1,2,2]
+                    ],
+                    records: []
+                }
+
+
                 console.log("Initializing database");
                 sqlConst.initialize.forEach(function(clause) {
                     Persistence.db.query(clause);
