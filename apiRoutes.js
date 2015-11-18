@@ -302,8 +302,8 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding player");
 			persistence.insert("player", req.body.player)
-				.then(function(status, something) {
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+				.then(function(result, something) {
+					res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 				});
 		}
 	},
@@ -312,8 +312,8 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding game");
 			persistence.insert("game", req.body.game)
-				.then(function(status) {
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+				.then(function(result) {
+					res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 				});
 		}
 	},
@@ -322,8 +322,8 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding track", JSON.stringify(req.body));
 			persistence.insert("track", [req.body.track, req.body.game])
-				.then(function(status) {
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+				.then(function(result) {
+					res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 				});
 		}
 	},
@@ -332,8 +332,8 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding car");
 			persistence.insert("car", [req.body.car, req.body.game])
-				.then(function(status) {
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+				.then(function(result) {
+					res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 				});
 		}
 	},
@@ -342,8 +342,8 @@ var postRoutes = [
 		handler: function (req, res) {
 			console.log("Adding leaderboard");
 			persistence.insert("leaderboard", [req.body.game, req.body.car, req.body.track])
-				.then(function(status) {
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+				.then(function(result) {
+					res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 				});
 		}
 	},
@@ -351,17 +351,38 @@ var postRoutes = [
 		url: "/record",
 		handler: function (req, res) {
 			console.log("Adding record", JSON.stringify(req.body, null, 4));
-			var params = [
-				req.body.time,
-				req.body.player,
-				req.body.leaderboardId,
-				new Date().getTime()
-			]
-			persistence.insert("record", params)
-				.then(function(status, something) {
-					console.log("Record inserted", JSON.stringify(params));
-					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
+			var query = "SELECT * FROM player WHERE name = $1";
+			persistence.rawGet(query, [req.body.player])
+				.then(function(players) {
+					return new Promise(function(resolve, reject) {
+						var player = players[0];
+						if (player) {
+							console.log("Found player ", player.id);
+							resolve(player.id);
+						}
+						else {
+							persistence.insert("player", req.body.player)
+								.then(function(newPlayer) {
+									resolve(newPlayer.id);
+								});
+						}
+					});
+				})
+				.then(function(playerId) {
+					var params = [
+						req.body.time,
+						playerId,
+						req.body.leaderboardId,
+						new Date().getTime()
+					];
+					persistence.insert("record", params)
+						.then(function(result, something) {
+							console.log("Record inserted", JSON.stringify(params));
+							res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
+						});
 				});
+			
+			
 		}
 	}
 ];

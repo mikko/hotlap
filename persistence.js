@@ -69,12 +69,12 @@ var sqlConst = {
     },
     testTable: "record",
     insert: {
-        player: "INSERT INTO player(name) VALUES ($1)",
-        game: "INSERT INTO game(name) VALUES ($1)",
-        car: "INSERT INTO car(name, game) VALUES ($1, $2)",
-        track: "INSERT INTO track(name, game) VALUES ($1, $2)",
-        record: "INSERT INTO record(time, player, leaderboard, date) VALUES ($1, (SELECT id FROM player WHERE name = $2), $3, $4)",
-        leaderboard: "INSERT INTO leaderboard(game, car, track) VALUES ($1, $2, $3)"
+        player: "INSERT INTO player(name) VALUES ($1) RETURNING id",
+        game: "INSERT INTO game(name) VALUES ($1) RETURNING id",
+        car: "INSERT INTO car(name, game) VALUES ($1, $2) RETURNING id",
+        track: "INSERT INTO track(name, game) VALUES ($1, $2) RETURNING id",
+        record: "INSERT INTO record(time, player, leaderboard, date) VALUES ($1, $2, $3, $4) RETURNING id",
+        leaderboard: "INSERT INTO leaderboard(game, car, track) VALUES ($1, $2, $3) RETURNING id"
     }
 }
 
@@ -196,8 +196,9 @@ Persistence.prototype.insert = function(table, values) {
             function(err, result) { 
                 if (err) {
                     console.log("ERROR", err);
+                    reject(err);
                 }
-                resolve(result); 
+                resolve(result.rows[0]); 
             });
     });
 };
