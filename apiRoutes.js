@@ -303,7 +303,7 @@ var postRoutes = [
 			console.log("Adding player");
 			persistence.insert("player", req.body.player)
 				.then(function(status, something) {
-					res.status(status ? 200 : 418).send("Added player");
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	},
@@ -313,7 +313,7 @@ var postRoutes = [
 			console.log("Adding game");
 			persistence.insert("game", req.body.game)
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added game");
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	},
@@ -323,7 +323,7 @@ var postRoutes = [
 			console.log("Adding track", JSON.stringify(req.body));
 			persistence.insert("track", [req.body.track, req.body.game])
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added track");
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	},
@@ -333,7 +333,7 @@ var postRoutes = [
 			console.log("Adding car");
 			persistence.insert("car", [req.body.car, req.body.game])
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added car");
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	},
@@ -343,24 +343,24 @@ var postRoutes = [
 			console.log("Adding leaderboard");
 			persistence.insert("leaderboard", [req.body.game, req.body.car, req.body.track])
 				.then(function(status) {
-					res.status(status ? 200 : 418).send("Added leaderboard");
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	},
 	{
 		url: "/record",
 		handler: function (req, res) {
-			console.log("Adding record");
+			console.log("Adding record", JSON.stringify(req.body, null, 4));
 			var params = [
 				req.body.time,
-				req.body.playerid,
-				req.body.leaderboardid,
+				req.body.player,
+				req.body.leaderboardId,
 				new Date().getTime()
 			]
 			persistence.insert("record", params)
 				.then(function(status, something) {
 					console.log("Record inserted", JSON.stringify(params));
-					res.status(status ? 200 : 418).send("Record added succesfully " + JSON.stringify(params));
+					res.status(status ? 200 : 418).send({ success: "great", data: req.body});
 				});
 		}
 	}
