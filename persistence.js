@@ -198,7 +198,8 @@ Persistence.prototype.insert = function(table, values) {
                     console.log("ERROR", err);
                     reject(err);
                 }
-                resolve(result.rows[0]); 
+                var newId = result && result.rows ? result.rows[0] : -1;
+                resolve(newId); 
             });
     });
 };
