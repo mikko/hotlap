@@ -1,0 +1,5 @@
+<h3><%= name %> just went #1 on <%= track %></h3>
+<h4>Current standings</h4>
+<% _.forEach(records, function(record) { %>
+	<b><%- record.player %>&nbsp;-&nbsp;<%- record.time %></b><br/>
+<% }); %>

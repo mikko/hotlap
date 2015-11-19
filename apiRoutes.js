@@ -1,6 +1,7 @@
 var _ = require("lodash");
 var persistence = require("./persistence");
 var Promise = require("bluebird");
+var fd = require("./flowdockNotify")
 
 var apiPath = "/v1";
 
@@ -385,6 +386,33 @@ var postRoutes = [
 					persistence.insert("record", params)
 						.then(function(result, something) {
 							console.log("Record inserted", JSON.stringify(params));
+							
+							var renderTemplate = _.template(fd.template);
+							recordData = {
+								name: "Keijo Kelmi",
+								track: "Keimolan Kelmirinki",
+								records: [
+									{
+										player: "Keijo Kelmi",
+										time: "1234"
+									},
+									{
+										player: "Toinen Kelmi",
+										time: "12345"
+									},
+									{
+										player: "Kekkonen",
+										time: "1234569"
+									},
+									{
+										player: "Läski-Pate",
+										time: "12345699"
+									}
+								]
+							}
+							fd.send("New record!", renderTemplate(recordData));
+							
+
 							res.status(result ? 200 : 418).send({ success: "great", data: Object.assign(req.body, result) });
 						});
 				});
