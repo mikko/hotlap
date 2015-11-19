@@ -158,12 +158,19 @@ var getRoutes = [
 				return new Promise(function(resolve, reject) {
 					var query = [
 						"SELECT * FROM record", 
-						"JOIN player ",
-						"ON player.id = record.player",
+						"INNER JOIN (",
+						"SELECT MIN(time) AS time, player, leaderboard",
+						"FROM record",
 						"WHERE leaderboard IN (",
 						dataObj.leaderboards.map((lb, i) => "$" + (i + 1)),
 						")",
-						"ORDER BY time"
+						"GROUP BY player, leaderboard ) mintimes",
+						"ON mintimes.time = record.time",
+						"AND mintimes.player = record.player",
+						"AND mintimes.leaderboard = record.leaderboard",
+						"JOIN player",
+						"ON player.id = record.player",
+						"ORDER BY record.time"
 					].join(" ");
 					var values = dataObj.leaderboards.map(lb => lb.id);
 					persistence.rawGet(query, values)
