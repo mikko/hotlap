@@ -29,3 +29,4 @@ node_modules
 *.sqlite
 
 prodDB.conf
+apiToken.conf

@@ -194,6 +194,7 @@ var getRoutes = [
 					var records = _.filter(data.records, records => records.leaderboard === leaderboard.id);
 					leaderboard.records = records || "error";
 				});
+				data.leaderboards = data.leaderboards.filter(leaderboard => !_.isEmpty(leaderboard.records));
 				res.send({leaderboards: data.leaderboards});
 			};
 			var leaderboards = persistence.fetchAll("leaderboard")
@@ -385,6 +386,10 @@ var postRoutes = [
 					];
 					persistence.insert("record", params)
 						.then(function(result, something) {
+							var addedId = result.id;
+
+							// Promise chain after response: get first record by time and compare if the same
+
 							console.log("Record inserted", JSON.stringify(params));
 							
 							var renderTemplate = _.template(fd.template);
