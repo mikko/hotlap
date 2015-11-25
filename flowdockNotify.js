@@ -17,11 +17,11 @@ module.exports = {
 			return Promise.reject("No api token configured");
 		}
 		var options = { 
-			url: 'https://api.flowdock.com/v1/messages/team_inbox/' + apiToken,
-		  	method: 'POST',
+			url: "https://api.flowdock.com/v1/messages/team_inbox/" + apiToken,
+		  	method: "POST",
 		  	json: { 
-	   			source: 'Laptimes',
-				from_address: 'noreply@nowhere.wut',
+	   			source: "Laptimes",
+				from_address: "noreply@nowhere.wut",
 				subject: subject,
 				content: message 
 			} 

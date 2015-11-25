@@ -1,7 +1,7 @@
 var _ = require("lodash");
 var persistence = require("./persistence");
 var Promise = require("bluebird");
-var fd = require("./flowdockNotify")
+var fd = require("./flowdockNotify");
 
 var apiPath = "/v1";
 
@@ -22,7 +22,7 @@ var frontendRoutes = [
 					
 					res.send(renderPage(data));
 				}
-			}
+			};
 			persistence.fetchAll("player")
 				.then(saveResult.bind(null, "players"));
 			persistence.fetchAll("game")
@@ -413,7 +413,7 @@ var postRoutes = [
 										time: "12345699"
 									}
 								]
-							}
+							};
 							fd.send("New record!", renderTemplate(recordData));
 							
 
