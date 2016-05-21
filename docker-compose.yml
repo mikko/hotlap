@@ -1,0 +1,13 @@
+version: "2"
+services:
+  hotlap:
+    build: .
+    ports:
+      - "3000"
+    links:
+      - db
+  db:
+    image: postgres:9
+    environment:
+      - POSTGRES_USER=hotlap
+      - POSTGRES_PASSWORD=hotlap
