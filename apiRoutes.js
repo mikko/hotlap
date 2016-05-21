@@ -247,7 +247,7 @@ var getRoutes = [
 						"WHERE leaderboard = $1",
 						"ORDER BY time"
 					].join(" ");
-					persistence.rawGet(query, [dataObj.leaderboard])
+					persistence.rawGet(query, [dataObj.id])
 						.then(function(dbData) {
 							dataObj.records = dbData;
 							resolve(dataObj);
